@@ -1,0 +1,27 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Ejemplo de API con Flask y Swagger UI",
+    "description": "Una API simple documentada con Swagger.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/saludo": {
+      "get": {
+        "summary": "Devuelve un mensaje de saludo",
+        "responses": {
+          "200": {
+            "description": "Mensaje de saludo exitoso",
+            "content": {
+              "application/json": {
+                "example": {
+                  "mensaje": "Hola desde la API Flask"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
