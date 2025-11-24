@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <a href="{{ url_for('crear') }}" class="btn">Nuevo Contacto</a>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Etiqueta</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in contactos %}
+            <tr>
+                {# Jinja escapa estos valores automáticamente #}
+                <td>{{ c.nombre }}</td>
+                <td>{{ c.correo }}</td>
+                <td>{{ c.telefono }}</td>
+                <td>{{ c.etiqueta }}</td>
+                <td>
+                    <a href="{{ url_for('editar', id=c.id) }}" class="btn">Editar</a>
+                    
+                    <form action="{{ url_for('eliminar', id=c.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger" 
+                                onclick="return confirm('¿Estás seguro de eliminar a {{ c.nombre }}?');">
+                            Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

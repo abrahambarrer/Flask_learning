@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestor de Agenda de Contactos</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .flash { padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .exito { background: #d4edda; color: #155724; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn { padding: 5px 10px; text-decoration: none; background: #eee; border: 1px solid #ccc; cursor: pointer;}
+        .btn-danger { background: #ffcccc; color: red; }
+    </style>
+</head>
+<body>
+    <h1>Agenda Segura</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>{{ accion }} Contacto</h2>
+    <form method="POST">
+        <p>
+            <label>Nombre (letras, 1-80):</label><br>
+            <input type="text" name="nombre" value="{{ contacto.nombre or '' }}" required maxlength="80">
+        </p>
+        <p>
+            <label>Correo:</label><br>
+            <input type="email" name="correo" value="{{ contacto.correo or '' }}" required maxlength="120">
+        </p>
+        <p>
+            <label>Teléfono (dígitos, espacios, +):</label><br>
+            <input type="text" name="telefono" value="{{ contacto.telefono or '' }}" required>
+        </p>
+        <p>
+            <label>Etiqueta:</label><br>
+            <select name="etiqueta">
+                <option value="" {% if not contacto.etiqueta %}selected{% endif %}>-- Sin etiqueta --</option>
+                <option value="familia" {% if contacto.etiqueta == 'familia' %}selected{% endif %}>Familia</option>
+                <option value="trabajo" {% if contacto.etiqueta == 'trabajo' %}selected{% endif %}>Trabajo</option>
+                <option value="amigos" {% if contacto.etiqueta == 'amigos' %}selected{% endif %}>Amigos</option>
+                <option value="otro" {% if contacto.etiqueta == 'otro' %}selected{% endif %}>Otro</option>
+            </select>
+        </p>
+        <p>
+            <label>Notas (máx 500, sin HTML):</label><br>
+            <textarea name="notas" maxlength="500">{{ contacto.notas or '' }}</textarea>
+        </p>
+        <p>
+            <button type="submit" class="btn">Guardar</button>
+            <a href="{{ url_for('index') }}" class="btn">Cancelar</a>
+        </p>
+    </form>
+{% endblock %}
