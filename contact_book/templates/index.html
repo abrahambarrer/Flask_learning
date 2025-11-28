@@ -10,6 +10,7 @@
                 <th>Correo</th>
                 <th>Teléfono</th>
                 <th>Etiqueta</th>
+                <th>Notas</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -20,7 +21,8 @@
                 <td>{{ c.nombre }}</td>
                 <td>{{ c.correo }}</td>
                 <td>{{ c.telefono }}</td>
-                <td>{{ c.etiqueta }}</td>
+                <td>{{ c.etiqueta|default('', true) }}</td>
+                <td>{{ c.notas|default('', true)|truncate(30) }}</td>
                 <td>
                     <a href="{{ url_for('editar', id=c.id) }}" class="btn">Editar</a>
                     

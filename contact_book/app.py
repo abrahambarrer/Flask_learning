@@ -1,9 +1,9 @@
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 import sqlite3
 import re
-from flask import Flask, render_template, request, redirect, url_for, flash, abort
 
 app = Flask(__name__)
-app.secret_key = 'clave_secreta_para_mensajes_flash'  # Necesario para 'flash'
+app.secret_key = 'clave_secreta'
 DB_NAME = 'contactos.db'
 
 # Validacion de datos
@@ -13,22 +13,22 @@ def validar_datos(datos):
     Valida los datos contra las reglas estrictas del negocio.
     Retorna: (booleano, mensaje_error)
     """
-    # 1. Validar Nombre: Letras, espacios, acentos. 1-80 chars.
+    # Validar Nombre: letras, espacios y acentos; longitud 1–80.
     nombre = datos.get('nombre', '').strip()
     if not (1 <= len(nombre) <= 80):
         return False, "El nombre debe tener entre 1 y 80 caracteres."
-    # Regex anclada (^...$)
+    # Regex
     if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', nombre):
         return False, "El nombre solo puede contener letras y espacios."
 
-    # 2. Validar Correo: Formato estándar, <= 120 chars.
+    # Validar Correo: formato estándar de correo electrónico; longitud ≤ 120.
     correo = datos.get('correo', '').strip()
     if len(correo) > 120:
         return False, "El correo excede los 120 caracteres."
     if not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', correo):
         return False, "Formato de correo inválido."
 
-    # 3. Validar Teléfono: Dígitos, espacios, +. 7-15 dígitos efectivos.
+    # Validar Teléfono: dígitos, espacios y “+” opcional; 7–15 dígitos efectivos; obligatorio.
     telefono = datos.get('telefono', '').strip()
     if not telefono:
         return False, "El teléfono es obligatorio."
@@ -39,13 +39,13 @@ def validar_datos(datos):
     if not (7 <= len(digitos) <= 15):
         return False, f"El teléfono debe tener entre 7 y 15 dígitos (tiene {len(digitos)})."
 
-    # 4. Validar Etiqueta: Lista blanca estricta.
+    # Validar Etiqueta: de lista cerrada (familia, trabajo, amigos, otro) o vacío.
     etiqueta = datos.get('etiqueta', '')
-    whitelist_etiquetas = ['familia', 'trabajo', 'amigos', 'otro', '']
+    whitelist_etiquetas = ['Familia', 'Trabajo', 'Amigos', 'Otro', '']
     if etiqueta not in whitelist_etiquetas:
         return False, "Etiqueta no válida."
 
-    # 5. Validar Notas: Texto plano, <= 500 chars, sin HTML (< o >).
+    # Validar Notas: texto plano; longitud ≤ 500; no aceptar etiquetas HTML.
     notas = datos.get('notas', '').strip()
     if len(notas) > 500:
         return False, "Las notas no pueden exceder 500 caracteres."
@@ -61,8 +61,8 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# Routes
 
+# Rutas
 @app.route('/')
 def index():
     try:
@@ -82,23 +82,28 @@ def crear():
             'nombre': request.form['nombre'],
             'correo': request.form['correo'],
             'telefono': request.form['telefono'],
-            'etiqueta': request.form.get('etiqueta'), # .get evita KeyError si falta
+            'etiqueta': request.form.get('etiqueta'),
             'notas': request.form['notas']
         }
         
         es_valido, error = validar_datos(datos)
         
         if not es_valido:
-            flash(error, 'error') # Mensaje breve al usuario
+            flash(error, 'error')
             return render_template('formulario.html', contacto=datos, accion="Crear")
 
         try:
             conn = get_db_connection()
-            # CONSULTA PARAMETRIZADA (Evita Inyección SQL)
+            # Consulta parametrizada
             conn.execute(
                 'INSERT INTO agenda (nombre, correo, telefono, etiqueta, notas) VALUES (?, ?, ?, ?, ?)',
-                (datos['nombre'].strip(), datos['correo'].strip(), datos['telefono'].strip(), 
-                 datos['etiqueta'], datos['notas'].strip())
+                (
+                    datos['nombre'].strip(), 
+                    datos['correo'].strip(), 
+                    datos['telefono'].strip(), 
+                    datos['etiqueta'] or None, 
+                    datos['notas'].strip()
+                )
             )
             conn.commit()
             conn.close()
@@ -132,17 +137,22 @@ def editar(id):
 
         if not es_valido:
             flash(error, 'error')
-            # Renderizamos con los datos del formulario (no de la DB) para no perder lo escrito
             return render_template('formulario.html', contacto=datos, accion="Editar")
 
         try:
-            # CONSULTA PARAMETRIZADA DE ACTUALIZACIÓN
+            # Consulta Parametrizada
             conn.execute("""
                 UPDATE agenda 
                 SET nombre = ?, correo = ?, telefono = ?, etiqueta = ?, notas = ?
                 WHERE id = ?
-            """, (datos['nombre'].strip(), datos['correo'].strip(), datos['telefono'].strip(), 
-                  datos['etiqueta'], datos['notas'].strip(), id))
+            """, (
+                datos['nombre'].strip(), 
+                datos['correo'].strip(), 
+                datos['telefono'].strip(), 
+                datos['etiqueta'] or None, 
+                datos['notas'].strip(), 
+                id
+            ))
             conn.commit()
             conn.close()
             flash('Contacto actualizado.', 'exito')
@@ -152,7 +162,7 @@ def editar(id):
             abort(500)
 
     conn.close()
-    # Convertimos sqlite3.Row a dict para manipularlo en template si es necesario
+
     return render_template('formulario.html', contacto=dict(contacto_db), accion="Editar")
 
 @app.route('/eliminar/<int:id>', methods=('POST',))
@@ -168,12 +178,10 @@ def eliminar(id):
         app.logger.error(f"Error al eliminar: {e}")
         abort(500)
 
-# Error generico
+# Mensaje de error general
 @app.errorhandler(500)
 def internal_error(error):
     return "<h1>Ocurrió un error interno. Por favor intente más tarde.</h1>", 500
 
 if __name__ == '__main__':
-    app.run(debug=True) 
-    # Nota: debug=True muestra trazas en desarrollo. 
-    # En producción se debe poner en False para cumplir el requisito de "sin trazas".
+    app.run() 

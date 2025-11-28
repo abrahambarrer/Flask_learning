@@ -19,10 +19,10 @@
             <label>Etiqueta:</label><br>
             <select name="etiqueta">
                 <option value="" {% if not contacto.etiqueta %}selected{% endif %}>-- Sin etiqueta --</option>
-                <option value="familia" {% if contacto.etiqueta == 'familia' %}selected{% endif %}>Familia</option>
-                <option value="trabajo" {% if contacto.etiqueta == 'trabajo' %}selected{% endif %}>Trabajo</option>
-                <option value="amigos" {% if contacto.etiqueta == 'amigos' %}selected{% endif %}>Amigos</option>
-                <option value="otro" {% if contacto.etiqueta == 'otro' %}selected{% endif %}>Otro</option>
+                <option value="Familia" {% if contacto.etiqueta == 'Familia' %}selected{% endif %}>Familia</option>
+                <option value="Trabajo" {% if contacto.etiqueta == 'Trabajo' %}selected{% endif %}>Trabajo</option>
+                <option value="Amigos" {% if contacto.etiqueta == 'Amigos' %}selected{% endif %}>Amigos</option>
+                <option value="Otro" {% if contacto.etiqueta == 'Otro' %}selected{% endif %}>Otro</option>
             </select>
         </p>
         <p>
